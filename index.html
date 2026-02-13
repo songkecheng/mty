@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>致我的宝贝 - 小彤雨</title>
+    <style>
+        /* 1. 基础美化与背景 */
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #fff5f7 0%, #feeaf1 100%);
+            font-family: 'PingFang SC', 'STHeiti', 'Microsoft YaHei', sans-serif;
+            color: #4a4a4a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            perspective: 1500px;
+        }
+
+        /* 花瓣背景容器 */
+        #petal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* 不干扰点击图片 */
+            z-index: 1;
+        }
+
+        .header {
+            width: 100%;
+            padding: 60px 0;
+            background: linear-gradient(to bottom, #ff9a9e, transparent);
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 2. 计时器 */
+        .timer-container {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            margin: -40px 20px 30px 20px;
+            padding: 25px 40px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 107, 129, 0.2);
+            box-shadow: 0 10px 30px rgba(255, 107, 129, 0.1);
+            text-align: center;
+            z-index: 10;
+        }
+        #timer {
+            font-size: 1.6rem;
+            color: #ff6b81;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 3. 文字内容区域 */
+        .content {
+            width: 85%;
+            max-width: 650px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.9); /* 轻微透明 */
+            position: relative;
+            border-radius: 4px;
+            margin-bottom: 60px;
+            border: 1px solid #eee;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.05);
+            z-index: 5;
+        }
+
+        #typing-text {
+            line-height: 2.2;
+            letter-spacing: 1.5px;
+            font-size: 1.05rem;
+            text-align: justify;
+            text-indent: 2em;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        /* 4. 3D相册舞台 */
+        .photo-stage {
+            width: 100%;
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 150px;
+            transform-style: preserve-3d;
+            z-index: 2;
+        }
+
+        .carousel {
+            position: relative;
+            width: 180px;
+            height: 240px;
+            transform-style: preserve-3d;
+            animation: rotateCarousel 30s linear infinite;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 180px;
+            height: 240px;
+            border: 8px solid white;
+            border-radius: 2px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.5s ease;
+            cursor: zoom-in; /* 提示可以放大 */
+            -webkit-box-reflect: below 15px linear-gradient(transparent, rgba(0,0,0,0.1));
+        }
+
+        .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+
+        @keyframes rotateCarousel {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* 5. 全屏大图查看器样式 */
+        #photo-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none; /* 初始隐藏 */
+            justify-content: center;
+            align-items: center;
+            z-index: 20000;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #modal-img {
+            max-width: 90%;
+            max-height: 85%;
+            border: 5px solid white;
+            border-radius: 4px;
+            transform: scale(0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 花瓣元素样式 */
+        .petal {
+            position: absolute;
+            background-color: #ffc0cb;
+            border-radius: 150% 0 150% 0;
+            opacity: 0.7;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.8; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* 其他动画保持不变... */
+        .enter-btn { padding: 15px 50px; border-radius: 40px; border: none; background: white; color: #ff9a9e; font-weight: bold; cursor: pointer; }
+        #cover { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column; color: white; transition: all 1s ease; }
+    </style>
+</head>
+<body>
+
+    <div id="photo-modal" onclick="closeModal()">
+        <img id="modal-img" src="" alt="预览图">
+    </div>
+
+    <div id="petal-container"></div>
+
+    <div id="cover">
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">To: 小彤雨</h1>
+        <p style="margin-bottom: 40px; letter-spacing: 4px; opacity: 0.9;">开启我们的专属回忆录</p>
+        <button class="enter-btn" onclick="enterSite()">点击开启</button>
+    </div>
+
+    <div class="header">
+        <h1 style="letter-spacing: 5px;">❤️ 我们这一年 ❤️</h1>
+        <p style="opacity: 0.8;">每一帧回忆，都想陪你慢慢看</p>
+    </div>
+
+    <div class="timer-container">
+        <div class="timer-label">宝贝，我们已经相识：</div>
+        <div id="timer">计算中...</div>
+    </div>
+
+    <div class="content">
+        <h3>小彤雨：</h3>
+        <p id="typing-text"></p>
+    </div>
+
+    <div class="photo-stage">
+        <div class="carousel" id="carouselStage">
+            <div class="carousel-item" onclick="openModal(this)"><img src="1.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic1'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="2.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic2'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="3.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic3'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="4.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic4'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="5.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic5'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="6.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic6'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="7.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic7'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="8.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic8'"></div>
+            <div class="carousel-item" onclick="openModal(this)"><img src="9.JPG" onerror="this.src='https://via.placeholder.com/180x240?text=Pic9'"></div>
+        </div>
+    </div>
+
+    <div class="music-box" style="position:fixed; bottom:30px; right:30px; z-index:999;">
+        <audio id="myAudio" loop controls style="height: 30px; width: 200px; opacity:0.6;">
+            <source src="RichNomadic - Hold on.mp3" type="audio/mpeg">
+        </audio>
+    </div>
+
+    <script>
+        const startDate = new Date(2024, 5, 2); 
+        const loveText = "这是我为你亲手制作的小网页。虽然有点小简陋，但我希望用这种方式，把我们珍贵的回忆永久保存下来。从初见时的怦然心动，到现在的不可或缺，每一个和你在一起的瞬间都弥足珍贵。我们也慢慢地在恋爱的过程中变得更加熟络，经历过许许多多事情，开开心心，也有过许多不开心的时刻，面对过许多困难，也经历过许多挑战，从焦作开始再到郑州、开封、许昌、南昌、武汉、石家庄等等，我希望我们的路不止如此，未来我想与你一起携手走过，共同前行 ✨";
+        
+        let typingIndex = 0;
+
+        // 1. 全屏放大逻辑
+        function openModal(element) {
+            const modal = document.getElementById('photo-modal');
+            const modalImg = document.getElementById('modal-img');
+            const carousel = document.getElementById('carouselStage');
+            
+            modalImg.src = element.getElementsByTagName('img')[0].src;
+            modal.style.display = 'flex';
+            
+            // 动画效果
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modalImg.style.transform = 'scale(1)';
+            }, 10);
+            
+            // 暂停旋转
+            carousel.style.animationPlayState = 'paused';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('photo-modal');
+            const modalImg = document.getElementById('modal-img');
+            const carousel = document.getElementById('carouselStage');
+            
+            modal.style.opacity = '0';
+            modalImg.style.transform = 'scale(0.5)';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                carousel.style.animationPlayState = 'running';
+            }, 300);
+        }
+
+        // 2. 动态花瓣逻辑
+        function createPetal() {
+            const container = document.getElementById('petal-container');
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            
+            // 随机大小和位置
+            const size = Math.random() * 15 + 10 + 'px';
+            petal.style.width = size;
+            petal.style.height = size;
+            petal.style.left = Math.random() * 100 + 'vw';
+            
+            // 随机动画时间
+            const duration = Math.random() * 5 + 5 + 's';
+            petal.style.animationDuration = duration;
+            
+            container.appendChild(petal);
+            
+            // 动画结束后移除
+            setTimeout(() => { petal.remove(); }, parseFloat(duration) * 1000);
+        }
+
+        // 3. 进入网站
+        function enterSite() {
+            const audio = document.getElementById('myAudio');
+            if (audio) { audio.play().catch(e => console.log("需手动播放")); }
+            
+            // 开启花瓣生成
+            setInterval(createPetal, 300);
+            
+            const cover = document.getElementById('cover');
+            cover.style.transform = 'translateY(-100%)';
+            cover.style.opacity = '0';
+            
+            setTimeout(() => {
+                cover.style.display = 'none';
+                startTyping(); 
+                initPhotos();
+            }, 1000); 
+        }
+
+        // --- 其余原有函数保持不变 ---
+        function initPhotos() {
+            const items = document.querySelectorAll('.carousel-item');
+            const len = items.length;
+            const angle = 360 / len;
+            const radius = 350; 
+            items.forEach((item, index) => {
+                item.style.transform = `rotateY(${index * angle}deg) translateZ(${radius}px)`;
+            });
+        }
+
+        function startTyping() {
+            if (typingIndex < loveText.length) {
+                document.getElementById("typing-text").innerHTML += loveText.charAt(typingIndex);
+                typingIndex++;
+                setTimeout(startTyping, 120); 
+            }
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startDate;
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+            document.getElementById("timer").innerHTML = `${d}天 ${h}时 ${m}分 ${s}秒`;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+</body>
+</html>
