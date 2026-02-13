@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To: 最爱的你</title>
+    <style>
+        /* --- 基础样式 --- */
+        body { margin: 0; padding: 0; overflow-x: hidden; background: #ffe6fa; font-family: "Microsoft YaHei", sans-serif; }
+        
+        /* --- 开场遮罩层 --- */
+        #welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(120deg, #a18cd1 0%, #fbc2eb 100%);
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            z-index: 9999; transition: opacity 1s;
+        }
+        .start-btn {
+            padding: 15px 40px; font-size: 1.5rem; color: white; border: 2px solid white;
+            border-radius: 50px; cursor: pointer; transition: 0.3s; background: rgba(255,255,255,0.2);
+        }
+        .start-btn:hover { background: white; color: #ff9a9e; }
+
+        /* --- 主内容区域 (默认隐藏) --- */
+        #main-content { opacity: 0; transition: opacity 2s; display: none; padding-bottom: 50px;}
+
+        /* --- 飘落爱心特效 --- */
+        .heart-fall {
+            position: fixed; top: -10%; color: #ff6b81; font-size: 20px;
+            animation: fall linear forwards; z-index: -1;
+        }
+        @keyframes fall {
+            to { transform: translateY(110vh) rotate(720deg); }
+        }
+
+        /* --- 核心布局 --- */
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; text-align: center; }
+        
+        /* 计时器 */
+        .timer-box { 
+            background: white; padding: 20px; border-radius: 15px; margin: 20px auto; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 80%;
+        }
+        #timer { font-size: 1.4rem; font-weight: bold; color: #d63384; margin-top: 10px; }
+
+        /* 打字机文字 */
+        .typing-area {
+            background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 15px;
+            margin: 30px 0; text-align: left; line-height: 1.8; font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); min-height: 150px;
+        }
+
+        /* 照片墙 */
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .photo-grid img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: 0.3s; }
+        .photo-grid img:hover { transform: scale(1.05); }
+
+        /* 音乐控制按钮 (旋转唱片) */
+        #music-control {
+            position: fixed; right: 20px; bottom: 20px; width: 50px; height: 50px;
+            background: white; border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.
